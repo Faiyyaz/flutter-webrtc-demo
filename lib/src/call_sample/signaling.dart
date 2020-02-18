@@ -106,6 +106,18 @@ class Signaling {
     }
   }
 
+  void muteMic() {
+    if (_localStream != null) {
+      _localStream.getAudioTracks()[0].setMicrophoneMute(true);
+    }
+  }
+
+  void unMuteMic() {
+    if (_localStream != null) {
+      _localStream.getAudioTracks()[0].setMicrophoneMute(false);
+    }
+  }
+
   void invite(String peer_id, String media, use_screen) {
     this._sessionId = this._selfId + '-' + peer_id;
 

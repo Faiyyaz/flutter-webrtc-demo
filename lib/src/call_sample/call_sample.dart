@@ -21,6 +21,7 @@ class _CallSampleState extends State<CallSample> {
   RTCVideoRenderer _localRenderer = new RTCVideoRenderer();
   RTCVideoRenderer _remoteRenderer = new RTCVideoRenderer();
   bool _inCalling = false;
+  bool _isMuted = false;
   final String serverIP;
 
   _CallSampleState({Key key, @required this.serverIP});
@@ -110,7 +111,17 @@ class _CallSampleState extends State<CallSample> {
     _signaling.switchCamera();
   }
 
-  _muteMic() {}
+  _muteMic() {
+    if (_isMuted) {
+      _isMuted = false;
+      setState(() {});
+      _signaling.unMuteMic();
+    } else {
+      _isMuted = true;
+      setState(() {});
+      _signaling.muteMic();
+    }
+  }
 
   _buildRow(context, peer) {
     var self = (peer['id'] == _selfId);
