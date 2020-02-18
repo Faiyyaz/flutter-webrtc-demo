@@ -1,12 +1,13 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter_webrtc/webrtc.dart';
-import 'random_string.dart';
 
 import '../utils/device_info.dart'
     if (dart.library.js) '../utils/device_info_web.dart';
 import '../utils/websocket.dart'
     if (dart.library.js) '../utils/websocket_web.dart';
+import 'random_string.dart';
 
 enum SignalingState {
   CallStateNew,
@@ -70,7 +71,7 @@ class Signaling {
     ],
   };
 
-  final Map<String, dynamic> _constraints = {
+  Map<String, dynamic> _constraints = {
     'mandatory': {
       'OfferToReceiveAudio': true,
       'OfferToReceiveVideo': true,
@@ -118,11 +119,33 @@ class Signaling {
     }
   }
 
-  void invite(String peer_id, String media, use_screen) {
+  void muteVideo() {
+    if (_localStream != null) {
+      _localStream.getVideoTracks()[0].enabled = false;
+    }
+  }
+
+  void unMuteVideo() {
+    if (_localStream != null) {
+      _localStream.getVideoTracks()[0].enabled = true;
+    }
+  }
+
+  void invite(String peer_id, String media, use_screen, bool isAudio) {
     this._sessionId = this._selfId + '-' + peer_id;
 
     if (this.onStateChange != null) {
       this.onStateChange(SignalingState.CallStateNew);
+    }
+
+    if (isAudio) {
+      _constraints = {
+        'mandatory': {
+          'OfferToReceiveAudio': true,
+          'OfferToReceiveVideo': false,
+        },
+        'optional': [],
+      };
     }
 
     _createPeerConnection(peer_id, media, use_screen).then((pc) {

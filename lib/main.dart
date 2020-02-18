@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webrtc_demo/src/call_sample/audio_call_sample.dart';
 import 'src/utils/key_value_store.dart'
     if (dart.library.js) 'src/utils/key_value_store_web.dart';
 import 'dart:core';
@@ -24,6 +25,7 @@ class _MyAppState extends State<MyApp> {
   String _serverAddress = '';
   KeyValueStore keyValueStore = KeyValueStore();
   bool _datachannel = false;
+  bool _audiochannel = false;
   @override
   initState() {
     super.initState();
@@ -62,7 +64,8 @@ class _MyAppState extends State<MyApp> {
   _initData() async {
     await keyValueStore.init();
     setState(() {
-      _serverAddress = keyValueStore.getString('server') ?? 'demo.cloudwebrtc.com';
+      _serverAddress =
+          keyValueStore.getString('server') ?? 'demo.cloudwebrtc.com';
     });
   }
 
@@ -75,12 +78,20 @@ class _MyAppState extends State<MyApp> {
       if (value != null) {
         if (value == DialogDemoAction.connect) {
           keyValueStore.setString('server', _serverAddress);
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (BuildContext context) => _datachannel
-                      ? DataChannelSample(ip: _serverAddress)
-                      : CallSample(ip: _serverAddress)));
+          if (!_audiochannel) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => _datachannel
+                        ? DataChannelSample(ip: _serverAddress)
+                        : CallSample(ip: _serverAddress)));
+          } else {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) =>
+                        AudioCallSample(ip: _serverAddress)));
+          }
         }
       }
     });
@@ -132,6 +143,15 @@ class _MyAppState extends State<MyApp> {
           subtitle: 'P2P Call Sample.',
           push: (BuildContext context) {
             _datachannel = false;
+            _audiochannel = false;
+            _showAddressDialog(context);
+          }),
+      RouteItem(
+          title: 'Audio P2P Call Sample',
+          subtitle: 'Audio P2P Call Sample.',
+          push: (BuildContext context) {
+            _datachannel = false;
+            _audiochannel = true;
             _showAddressDialog(context);
           }),
       RouteItem(
@@ -139,6 +159,7 @@ class _MyAppState extends State<MyApp> {
           subtitle: 'P2P Data Channel.',
           push: (BuildContext context) {
             _datachannel = true;
+            _audiochannel = false;
             _showAddressDialog(context);
           }),
     ];
