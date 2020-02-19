@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_webrtc/webrtc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mime/mime.dart';
 
 import '../../message_bean.dart';
 import 'signaling.dart';
@@ -35,11 +34,8 @@ class _DataChannelSampleState extends State<DataChannelSample> {
   Timer _timer;
   List<MessageBean> _text = [];
   TextEditingController _controller = TextEditingController();
-  List<String> _allowedExtension = [
-    'image/jpeg',
-    'image/png',
-    'application/pdf'
-  ];
+  List<String> _allowedExtension = ['.jpeg', '.png', '.pdf'];
+  String _lastExtension = '';
 
   _DataChannelSampleState({Key key, @required this.serverIP});
 
@@ -63,13 +59,34 @@ class _DataChannelSampleState extends State<DataChannelSample> {
       _signaling = new Signaling(serverIP)..connect();
 
       _signaling.onDataChannelMessage = (dc, RTCDataChannelMessage data) {
+        if (data.isBinary) {
+          print(data.binary.toString());
+        } else {
+          print(data.text.toString());
+        }
+
         setState(() {
           if (data.isBinary) {
-            String extension = lookupMimeType('test', headerBytes: data.binary);
             _text.add(
-                MessageBean(type: extension, text: '', bytes: data.binary));
+              MessageBean(
+                  type: _lastExtension,
+                  text: '',
+                  bytes: data.binary,
+                  shouldHide: false),
+            );
+            _lastExtension = '';
           } else {
-            _text.add(MessageBean(type: 'text', text: data.text, bytes: null));
+            if (!data.text.startsWith('.')) {
+              _text.add(
+                MessageBean(
+                    type: 'text',
+                    text: data.text,
+                    bytes: null,
+                    shouldHide: false),
+              );
+            } else {
+              _lastExtension = data.text;
+            }
           }
         });
       };
@@ -172,38 +189,48 @@ class _DataChannelSampleState extends State<DataChannelSample> {
               itemCount: _text.length,
               itemBuilder: (context, index) {
                 MessageBean messageBean = _text[index];
-                switch (messageBean.type) {
-                  case 'image/jpeg':
-                  case 'image/png':
-                    return Container(
-                      margin: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Image.memory(_text[index].bytes),
-                    );
-                    break;
-                  case 'application/pdf':
-                    return Container(
-                      margin: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Icon(
-                        Icons.picture_as_pdf,
-                        size: 50.0,
-                      ),
-                    );
-                  default:
-                    if (_text[index].text.toLowerCase().contains('https://') ||
-                        _text[index].text.toLowerCase().contains('http://')) {
+                bool shouldHide = messageBean.shouldHide;
+                if (!shouldHide) {
+                  switch (messageBean.type) {
+                    case '.jpeg':
+                    case '.png':
                       return Container(
                         margin: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Linkify(
-                          onOpen: (link) => print("Clicked ${link.url}!"),
-                          text: _text[index].text,
+                        child: Image.memory(_text[index].bytes),
+                      );
+                      break;
+                    case '.pdf':
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Icon(
+                          Icons.picture_as_pdf,
+                          size: 50.0,
                         ),
                       );
-                    } else {
-                      return Container(
-                        margin: EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(_text[index].text),
-                      );
-                    }
+                    default:
+                      if (_text[index]
+                              .text
+                              .toLowerCase()
+                              .contains('https://') ||
+                          _text[index].text.toLowerCase().contains('http://')) {
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 8.0),
+                          child: Linkify(
+                            onOpen: (link) => print("Clicked ${link.url}!"),
+                            text: _text[index].text,
+                          ),
+                        );
+                      } else {
+                        return Container(
+                          margin: EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(_text[index].text),
+                        );
+                      }
+                  }
+                } else {
+                  return Container(
+                    height: 0,
+                  );
                 }
               })
           : new ListView.builder(
@@ -228,11 +255,8 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                     if (!mounted) return;
                     if (_dataChannel != null) {
                       Uint8List binary = file.readAsBytesSync();
-                      _dataChannel
-                          .send(RTCDataChannelMessage.fromBinary(binary));
                       String extension =
-                          lookupMimeType('test', headerBytes: binary);
-
+                          file.path.substring(file.path.lastIndexOf('.'));
                       if (!_allowedExtension.contains(extension)) {
                         Fluttertoast.showToast(
                             msg: "File format not supported",
@@ -243,9 +267,40 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                             textColor: Colors.white,
                             fontSize: 16.0);
                       } else {
-                        _text.add(MessageBean(
-                            type: extension, text: '', bytes: binary));
-                        setState(() {});
+                        _dataChannel
+                            .send(RTCDataChannelMessage(extension))
+                            .then((response) {
+                          print('Text Success');
+                        }, onError: (e) {
+                          print(e.toString());
+                        });
+
+                        _dataChannel
+                            .send(RTCDataChannelMessage.fromBinary(binary))
+                            .then((response) {
+                          print('Binary Success');
+                        }, onError: (e) {
+                          print(e.toString());
+                        });
+
+//                        await Future.delayed(Duration(seconds: 5), () {
+//                          _dataChannel
+//                              .send(RTCDataChannelMessage.fromBinary(binary));
+//                        });
+//
+////                        _text.add(MessageBean(
+////                            type: 'text',
+////                            text: extension,
+////                            bytes: null,
+////                            shouldHide: true));
+////
+////                        _text.add(MessageBean(
+////                            type: extension,
+////                            text: '',
+////                            bytes: binary,
+////                            shouldHide: false));
+//
+//                        setState(() {});
                       }
                     }
                   },
@@ -266,8 +321,11 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                       String text = _controller.text;
                       _controller.clear();
                       _dataChannel.send(RTCDataChannelMessage(text));
-                      _text.add(
-                          MessageBean(type: 'text', text: text, bytes: null));
+                      _text.add(MessageBean(
+                          type: 'text',
+                          text: text,
+                          bytes: null,
+                          shouldHide: false));
                       setState(() {});
                     }
                   },
