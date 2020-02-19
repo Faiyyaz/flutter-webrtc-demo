@@ -439,4 +439,11 @@ class Signaling {
     JsonEncoder encoder = new JsonEncoder();
     _socket.send(encoder.convert(data));
   }
+
+  setSpeakerPhone(bool enableSpeaker) {
+    if (_localStream != null) {
+      _localStream.getAudioTracks()[0].enableSpeakerphone(enableSpeaker);
+      _localStream.getAudioTracks()[0].setMicrophoneMute(enableSpeaker);
+    }
+  }
 }
