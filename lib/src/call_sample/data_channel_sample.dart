@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:flutter_webrtc/webrtc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mime/mime.dart';
@@ -188,10 +189,21 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                       ),
                     );
                   default:
-                    return Container(
-                      margin: EdgeInsets.symmetric(vertical: 8.0),
-                      child: Text(_text[index].text),
-                    );
+                    if (_text[index].text.toLowerCase().contains('https://') ||
+                        _text[index].text.toLowerCase().contains('http://')) {
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Linkify(
+                          onOpen: (link) => print("Clicked ${link.url}!"),
+                          text: _text[index].text,
+                        ),
+                      );
+                    } else {
+                      return Container(
+                        margin: EdgeInsets.symmetric(vertical: 8.0),
+                        child: Text(_text[index].text),
+                      );
+                    }
                 }
               })
           : new ListView.builder(
