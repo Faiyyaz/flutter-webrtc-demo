@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/webrtc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mime/mime.dart';
 
 import '../../message_bean.dart';
@@ -33,6 +34,11 @@ class _DataChannelSampleState extends State<DataChannelSample> {
   Timer _timer;
   List<MessageBean> _text = [];
   TextEditingController _controller = TextEditingController();
+  List<String> _allowedExtension = [
+    'image/jpeg',
+    'image/png',
+    'application/pdf'
+  ];
 
   _DataChannelSampleState({Key key, @required this.serverIP});
 
@@ -59,13 +65,8 @@ class _DataChannelSampleState extends State<DataChannelSample> {
         setState(() {
           if (data.isBinary) {
             String extension = lookupMimeType('test', headerBytes: data.binary);
-            switch (extension) {
-              case 'image/jpeg':
-              case 'image/png':
-                _text.add(
-                    MessageBean(type: extension, text: '', bytes: data.binary));
-                break;
-            }
+            _text.add(
+                MessageBean(type: extension, text: '', bytes: data.binary));
           } else {
             _text.add(MessageBean(type: 'text', text: data.text, bytes: null));
           }
@@ -178,6 +179,14 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                       child: Image.memory(_text[index].bytes),
                     );
                     break;
+                  case 'application/pdf':
+                    return Container(
+                      margin: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Icon(
+                        Icons.picture_as_pdf,
+                        size: 50.0,
+                      ),
+                    );
                   default:
                     return Container(
                       margin: EdgeInsets.symmetric(vertical: 8.0),
@@ -203,7 +212,7 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                 IconButton(
                   icon: Icon(Icons.file_upload),
                   onPressed: () async {
-                    File file = await FilePicker.getFile(type: FileType.IMAGE);
+                    File file = await FilePicker.getFile();
                     if (!mounted) return;
                     if (_dataChannel != null) {
                       Uint8List binary = file.readAsBytesSync();
@@ -211,9 +220,21 @@ class _DataChannelSampleState extends State<DataChannelSample> {
                           .send(RTCDataChannelMessage.fromBinary(binary));
                       String extension =
                           lookupMimeType('test', headerBytes: binary);
-                      _text.add(MessageBean(
-                          type: extension, text: '', bytes: binary));
-                      setState(() {});
+
+                      if (!_allowedExtension.contains(extension)) {
+                        Fluttertoast.showToast(
+                            msg: "File format not supported",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIos: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else {
+                        _text.add(MessageBean(
+                            type: extension, text: '', bytes: binary));
+                        setState(() {});
+                      }
                     }
                   },
                   iconSize: 24.0,

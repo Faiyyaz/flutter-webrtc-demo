@@ -2,12 +2,12 @@ PODS:
   - file_picker (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_audiomanager (0.0.1):
-    - Flutter
   - flutter_webrtc (0.2.2):
     - Flutter
     - GoogleWebRTC (= 1.1.27299)
     - libyuv-iOS
+  - fluttertoast (0.0.2):
+    - Flutter
   - GoogleWebRTC (1.1.27299)
   - libyuv-iOS (1.0.2)
   - path_provider (0.0.1):
@@ -22,8 +22,8 @@ PODS:
 DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
-  - flutter_audiomanager (from `.symlinks/plugins/flutter_audiomanager/ios`)
   - flutter_webrtc (from `.symlinks/plugins/flutter_webrtc/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
   - shared_preferences_macos (from `.symlinks/plugins/shared_preferences_macos/ios`)
@@ -39,10 +39,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/file_picker/ios"
   Flutter:
     :path: Flutter
-  flutter_audiomanager:
-    :path: ".symlinks/plugins/flutter_audiomanager/ios"
   flutter_webrtc:
     :path: ".symlinks/plugins/flutter_webrtc/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
   shared_preferences:
@@ -55,8 +55,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   file_picker: 408623be2125b79a4539cf703be3d4b3abe5e245
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_audiomanager: d55d475862b7a2c0c1130a04683f2ed92044a510
   flutter_webrtc: f62e93ff3099e08a54040af9a61e590d062b5d4f
+  fluttertoast: b644586ef3b16f67fae9a1f8754cef6b2d6b634b
   GoogleWebRTC: 893a5f2f3635437ec3b05ef240993d5713307804
   libyuv-iOS: 5a154ccc84ec754029886ecb607512731fe30640
   path_provider: fb74bd0465e96b594bb3b5088ee4a4e7bb1f2a9d
