@@ -28,9 +28,6 @@ dependencies:
   mime: ^0.9.6+3
   path_provider: ^1.6.0
   flutter_webrtc: ^0.2.6
-  flutter_audiomanager:
-    git:
-      url: https://github.com/solid-software/flutter_audiomanager.git
 
 dev_dependencies:
   flutter_test:

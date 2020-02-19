@@ -1,8 +1,6 @@
 import 'dart:core';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_audiomanager/flutter_audiomanager.dart';
 import 'package:flutter_webrtc/webrtc.dart';
 
 import 'signaling.dart';
@@ -28,8 +26,6 @@ class _CallSampleState extends State<CallSample> {
   bool _isMuted = false;
   final String serverIP;
   bool _isVideoMuted = false;
-  final HeadphonesDetector headphonesDetector = HeadphonesDetector();
-  bool _isHeadPhoneConnected = false;
 
   _CallSampleState({Key key, @required this.serverIP});
 
@@ -38,35 +34,6 @@ class _CallSampleState extends State<CallSample> {
     super.initState();
     initRenderers();
     _connect();
-    if (Platform.isAndroid) {
-      _refreshState();
-    }
-  }
-
-  _refreshState() {
-    headphonesDetector.wiredHeadphonesConnectionState.listen((response) {
-      if (response == HeadphonesConnectionState.connected) {
-        _isHeadPhoneConnected = true;
-        if (_signaling != null) {
-          _signaling.setSpeakerPhone(false);
-        }
-      } else {
-        headphonesDetector.bluetoothHeadphonesConnectionState
-            .listen((response) {
-          if (response == HeadphonesConnectionState.connected) {
-            _isHeadPhoneConnected = true;
-            if (_signaling != null) {
-              _signaling.setSpeakerPhone(false);
-            }
-          } else {
-            _isHeadPhoneConnected = false;
-            if (_signaling != null) {
-              _signaling.setSpeakerPhone(true);
-            }
-          }
-        });
-      }
-    });
   }
 
   initRenderers() async {
