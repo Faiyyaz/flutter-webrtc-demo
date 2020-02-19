@@ -36,6 +36,7 @@ class _CallSampleState extends State<CallSample> {
 
   initRenderers() async {
     await _localRenderer.initialize();
+    _localRenderer.mirror = true;
     await _remoteRenderer.initialize();
   }
 
