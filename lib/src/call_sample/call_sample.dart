@@ -51,28 +51,22 @@ class _CallSampleState extends State<CallSample> {
           _signaling.setSpeakerPhone(false);
         }
       } else {
-        _isHeadPhoneConnected = false;
-        if (_signaling != null) {
-          _signaling.setSpeakerPhone(true);
-        }
+        headphonesDetector.bluetoothHeadphonesConnectionState
+            .listen((response) {
+          if (response == HeadphonesConnectionState.connected) {
+            _isHeadPhoneConnected = true;
+            if (_signaling != null) {
+              _signaling.setSpeakerPhone(false);
+            }
+          } else {
+            _isHeadPhoneConnected = false;
+            if (_signaling != null) {
+              _signaling.setSpeakerPhone(true);
+            }
+          }
+        });
       }
     });
-
-    if (!_isHeadPhoneConnected) {
-      headphonesDetector.bluetoothHeadphonesConnectionState.listen((response) {
-        if (response == HeadphonesConnectionState.connected) {
-          _isHeadPhoneConnected = true;
-          if (_signaling != null) {
-            _signaling.setSpeakerPhone(false);
-          }
-        } else {
-          _isHeadPhoneConnected = false;
-          if (_signaling != null) {
-            _signaling.setSpeakerPhone(true);
-          }
-        }
-      });
-    }
   }
 
   initRenderers() async {
